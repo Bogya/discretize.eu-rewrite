@@ -26,6 +26,9 @@ def update_frontmatter(folder_path):
 
                     new_frontmatter = 'layout: src/layouts/'
 
+                    if new_frontmatter in frontmatter:
+                        continue
+
                     if '/builds/' in root:
                         new_frontmatter += 'Build' 
                         new_frontmatter = frontmatter + f'\n{new_frontmatter}.astro'
@@ -37,6 +40,7 @@ def update_frontmatter(folder_path):
                     elif '/fractals/' in root:
                         new_frontmatter = frontmatter
 
+                   
                     new_content = content.replace(frontmatter, new_frontmatter).replace("\"legends\"", "\"skills\":[],\"legends\"")
             
                     with open(file_path, 'w') as f:
@@ -68,9 +72,28 @@ def update_images(folder_path):
                     if os.path.isfile(original_path):
                         os.rename(original_path, new_path)
 
+def inject_components(folder_path):
+    """
+    every mdx file must container the components export 
+    export { components } from "@components/components.ts";
+    """
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.mdx'):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r+') as f:
+                    content = f.read()
 
+                    lines = content.split("---\n")
+                    if len(lines) < 2:
+                        continue
+                    # insert after second line
+                    lines[2] = 'import { components } from "@components/components.ts";\nexport { components };\n\n' + lines[2]
+                    f.seek(0)
+                    f.write("---\n".join(lines))
 
 if __name__ == '__main__':
     rename_to_mdx('discretize-guides/')
     update_frontmatter('discretize-guides/')
     update_images('discretize-guides/')
+    inject_components('discretize-guides/')

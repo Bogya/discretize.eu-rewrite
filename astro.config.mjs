@@ -37,6 +37,9 @@ export default defineConfig({
     build: {
       assetsInlineLimit: 0,
     },
+    resolve: {
+      preserveSymlinks: true,
+    },
     plugins: [yaml()],
     // build: {
     //   rollupOptions: {
